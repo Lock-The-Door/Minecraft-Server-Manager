@@ -23,7 +23,14 @@ static class Program
         // Handle Events
         CraftyControl.CraftyControl.Instance.ServerStopped += HandleServerStop;
 
-        _ = DiscordClient.Initialize("OTI2ODYxMTAzOTAyOTA4NDM2.GoN_Ii.1dtppu0vtC2Ms5dIrcUMbNPpRxC8O0OyVIVVfM");
+        string? discordToken = ConfigurationManager.AppSettings.Get("Discord:Token");
+        if (discordToken == null)
+        {
+            Console.WriteLine("Discord token not found in config file");
+            return;
+        }
+
+        _ = DiscordClient.Initialize(discordToken);
 
         // Block until exit
         await Task.Delay(-1);
