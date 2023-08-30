@@ -53,6 +53,9 @@ class DiscordClient
         _timer.Elapsed += async (sender, e) => await UpdateStatus();
 
         await UpdateStatus();
+
+        _socketClient.Ready -= ClientReadyAsync;
+        _socketClient.Ready += async () => await UpdateStatus();
     }
 
     private static async Task HandleInteractionAsync(SocketInteraction interaction)
