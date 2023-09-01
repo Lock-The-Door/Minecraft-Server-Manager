@@ -53,7 +53,8 @@ public class MinecraftServer
         // Sanity check for state
         if (State == MinecraftServerState.Stopped != !Status.Running)
         {
-            await DiscordClient.UpdateStatus(true, "Warning: Server state is inconsistent: " + State.ToString());
+            // await DiscordClient.UpdateStatus(true, "Warning: Server state is inconsistent: " + State.ToString());
+            Console.WriteLine("Warning: Server state is inconsistent: " + State.ToString() + " Running: " + Status.Running);
         }
     }
 
@@ -86,8 +87,16 @@ public class MinecraftServer
             return;
 
         var buffer = new byte[1024 * 4];
-        while (WebSocket.State == WebSocketState.Open)
+        while (true)
         {
+            if (WebSocket == null || WebSocket.State != WebSocketState.Open)
+            {
+                if (Status.Running)
+                    WebSocket = await CraftyControl.Instance.CreateWebSocketAsync(ServerInfo.Id);
+                else
+                    return;
+            }
+
             WebSocketReceiveResult result;
             try
             {
@@ -99,9 +108,10 @@ public class MinecraftServer
                     throw;
 
                 Console.WriteLine(e.Message);
-                // Reconnect
-                WebSocket.Abort();
-                WebSocket = await CraftyControl.Instance.CreateWebSocketAsync(ServerInfo.Id);
+                // Reconnect if server is still online
+                WebSocket?.Abort();
+                if (Status.Running)
+                    WebSocket = await CraftyControl.Instance.CreateWebSocketAsync(ServerInfo.Id);
                 continue;
             }
             if (result.MessageType == WebSocketMessageType.Close)
