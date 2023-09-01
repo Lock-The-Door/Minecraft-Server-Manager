@@ -6,13 +6,14 @@ using Newtonsoft.Json.Linq;
 
 namespace Minecraft_Server_Bot.CraftyControl;
 
-public class MinecraftServer {
+public class MinecraftServer
+{
     public MinecraftServerWrapper ServerInfo => Status.ServerInfo;
     public MinecraftServerStatusWrapper Status { get; private set; }
     public double IdleHours { get; private set; } = 1;
 
     private WebSocket? _webSocket;
-    public WebSocket? WebSocket 
+    public WebSocket? WebSocket
     {
         get => _webSocket;
         set
@@ -31,15 +32,18 @@ public class MinecraftServer {
     public delegate void ServerStateChangedHandler(object sender, ServerStateChangeEventArgs e);
     public static event ServerStateChangedHandler StateChanged;
 
-    public MinecraftServer(MinecraftServerStatusWrapper status, WebSocket? webSocket = null) {
+    public MinecraftServer(MinecraftServerStatusWrapper status, WebSocket? webSocket = null)
+    {
         Status = status;
         WebSocket = webSocket;
         UpdateState(Status.Running ? MinecraftServerState.Running : MinecraftServerState.Stopped).Wait();
     }
 
-    public async Task UpdateStatus(MinecraftServerStatusWrapper? status = null) {
+    public async Task UpdateStatus(MinecraftServerStatusWrapper? status = null)
+    {
         status ??= await CraftyControl.Instance.GetServerStatusAsync(ServerInfo.Id);
-        if (status == null) {
+        if (status == null)
+        {
             State = MinecraftServerState.Unknown;
             await DiscordClient.UpdateStatus(false, "Can't update server status");
             return;
@@ -53,7 +57,8 @@ public class MinecraftServer {
         }
     }
 
-    public void DisposeSocket() {
+    public void DisposeSocket()
+    {
         WebSocket = null;
     }
 
@@ -83,29 +88,43 @@ public class MinecraftServer {
         var buffer = new byte[1024 * 4];
         while (WebSocket.State == WebSocketState.Open)
         {
-            var result = await WebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            WebSocketReceiveResult result;
+            try
+            {
+                result = await WebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            }
+            catch (Exception e)
+            {
+                if (e is not WebSocketException && e is not TaskCanceledException)
+                    throw e;
+
+                Console.WriteLine(e.Message);
+                // Reconnect
+                WebSocket.Abort();
+                WebSocket = await CraftyControl.Instance.CreateWebSocketAsync(ServerInfo.Id);
+                continue;
+            }
             if (result.MessageType == WebSocketMessageType.Close)
             {
                 await WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
                 WebSocket = null;
                 return;
             }
-            else
+            var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+            var messageObject = JsonConvert.DeserializeObject<SocketEventWrapper>(message);
+            switch (messageObject?.Event)
             {
-                var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                var messageObject = JsonConvert.DeserializeObject<SocketEventWrapper>(message);
-                switch (messageObject?.Event)
-                {
-                    case "vterm_new_line":
-                        var terminalLine = (messageObject.Data as JObject)!.ToObject<TerminalLine>();
-                        if (terminalLine!.Line.Contains("[Server thread/INFO]</span>: Stopping server"))
-                        {
-                            await UpdateState(MinecraftServerState.Stopping);
-                            return;
-                        }
-                        break;
-                    case "update_server_details":
-                    try{
+                case "vterm_new_line":
+                    var terminalLine = (messageObject.Data as JObject)!.ToObject<TerminalLine>();
+                    if (terminalLine!.Line.Contains("[Server thread/INFO]</span>: Stopping server"))
+                    {
+                        await UpdateState(MinecraftServerState.Stopping);
+                        return;
+                    }
+                    break;
+                case "update_server_details":
+                    try
+                    {
                         var serverDetails = (messageObject.Data as JObject)!.ToObject<ServerDetailUpdate>();
 
                         if (serverDetails!.Running && State == MinecraftServerState.Stopped || State == MinecraftServerState.Stopping || State == MinecraftServerState.Unknown)
@@ -146,7 +165,6 @@ public class MinecraftServer {
                         Console.WriteLine(e.Message);
                         break;
                     }
-                }
             }
         }
     }
