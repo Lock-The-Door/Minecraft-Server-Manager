@@ -21,7 +21,7 @@ static class Program
     static async Task MainAsync(string[] args)
     {
         // Handle Events
-        CraftyControl.CraftyControl.Instance.ServerStopped += HandleServerStop;
+        CraftyControl.CraftyControl.ServerStopped += HandleServerStop;
 
         string? discordToken = ConfigurationManager.AppSettings.Get("Discord:Token");
         if (discordToken == null)

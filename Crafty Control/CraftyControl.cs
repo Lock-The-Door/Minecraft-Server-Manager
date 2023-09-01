@@ -27,7 +27,7 @@ class CraftyControl
     private readonly string _webSocketCookie = "";
     public List<MinecraftServer> MinecraftServers { get; private set; } = new();
     public delegate Task ServerStatusChangeEventHandler(object? sender, ServerStateChangeEventArgs e);
-    public event ServerStatusChangeEventHandler ServerStopped;
+    public static event ServerStatusChangeEventHandler ServerStopped;
 
     private CraftyControl(CraftyControlConfiguration config)
     {
