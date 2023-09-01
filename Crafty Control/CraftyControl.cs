@@ -135,6 +135,10 @@ class CraftyControl
             return false;
         }
 
+        MinecraftServer? server = MinecraftServers.FirstOrDefault(s => s.ServerInfo.Id == serverId);
+        if (server != null)
+            await server.UpdateStatus(newState: MinecraftServerState.Starting);
+
         // Send a message and wait for a response
         DateTime startTime = DateTime.Now;
         HttpResponseMessage sendMessage = await _httpClient.PostAsync($"servers/{serverId}/stdin", new StringContent("save-all"));
@@ -183,7 +187,6 @@ class CraftyControl
             //     cancellationSource.Cancel();
         }
 
-        MinecraftServer? server = MinecraftServers.FirstOrDefault(s => s.ServerInfo.Id == serverId);
         if (server == null)
         {
             socket.Dispose();
@@ -222,7 +225,10 @@ class CraftyControl
         // Wait for server to finish stopping
         var cancellation = new CancellationTokenSource(120000).Token;
         while (server.Status.Running && !cancellation.IsCancellationRequested)
+        {
             await Task.Delay(1000);
+            await server.UpdateStatus(newState: MinecraftServerState.Stopping);
+        }
 
         if (cancellation.IsCancellationRequested)
             return false;

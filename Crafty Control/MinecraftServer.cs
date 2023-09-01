@@ -39,9 +39,10 @@ public class MinecraftServer
         UpdateState(Status.Running ? MinecraftServerState.Running : MinecraftServerState.Stopped).Wait();
     }
 
-    public async Task UpdateStatus(MinecraftServerStatusWrapper? status = null)
+    public async Task UpdateStatus(MinecraftServerStatusWrapper? status = null, MinecraftServerState newState = MinecraftServerState.Unknown)
     {
         status ??= await CraftyControl.Instance.GetServerStatusAsync(ServerInfo.Id);
+        newState = newState == MinecraftServerState.Unknown ? State : newState;
         if (status == null)
         {
             State = MinecraftServerState.Unknown;
@@ -49,10 +50,18 @@ public class MinecraftServer
             return;
         }
         Status = status;
+        await UpdateState(newState);
 
         // Sanity check for state
         if (State == MinecraftServerState.Stopped != !Status.Running)
         {
+            // Can autofix when not running
+            if (!Status.Running)
+            {
+                await UpdateState(MinecraftServerState.Stopped);
+                return;
+            }
+
             // await DiscordClient.UpdateStatus(true, "Warning: Server state is inconsistent: " + State.ToString());
             Console.WriteLine("Warning: Server state is inconsistent: " + State.ToString() + " Running: " + Status.Running);
         }
