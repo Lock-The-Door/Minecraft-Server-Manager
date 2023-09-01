@@ -1,5 +1,6 @@
 using System.Net.WebSockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -18,6 +19,8 @@ class CraftyControl
 
         Instance = new CraftyControl(config);
     }
+
+    private static Regex _doneMessageRegex = new(@"\[Server thread\/INFO\]<\/span>(?: \[minecraft\/DedicatedServer\])?: Done \(\d+.\d{3}s\)!", RegexOptions.Compiled);
 
     private readonly HttpClient _httpClient;
     private readonly Uri _websocketUri;
@@ -133,12 +136,24 @@ class CraftyControl
         }
 
         // Send a message and wait for a response
+        DateTime startTime = DateTime.Now;
         HttpResponseMessage sendMessage = await _httpClient.PostAsync($"servers/{serverId}/stdin", new StringContent("save-all"));
         sendMessage.EnsureSuccessStatusCode();
         var cancellationSource = new CancellationTokenSource(120000);
         CancellationToken cancellation = cancellationSource.Token;
         while (!cancellation.IsCancellationRequested)
         {
+            if (DateTime.Now - startTime > TimeSpan.FromSeconds(15))
+            {
+                // Poll to see if stopped by error
+                var status = await GetServerStatusAsync(serverId);
+                if (status?.Running == false)
+                {
+                    cancellationSource.Cancel();
+                    break;
+                }
+            }
+
             ArraySegment<byte> buffer = new(new byte[1024]);
             try
             {
@@ -162,7 +177,7 @@ class CraftyControl
                 continue;
             var terminalLine = (socketEvent.Data as JObject)!.ToObject<TerminalLine>();
 
-            if (terminalLine!.Line!.Contains("[Server thread/INFO]</span>: Done (") || terminalLine.Line.Contains("Saved the game"))
+            if (_doneMessageRegex.IsMatch(terminalLine!.Line!) || terminalLine.Line.Contains("Saved the game"))
                 break;
             // else if (terminalLine.Line.Contains("mc-log-error"))
             //     cancellationSource.Cancel();
