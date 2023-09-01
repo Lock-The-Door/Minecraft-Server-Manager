@@ -96,7 +96,7 @@ public class MinecraftServer
             catch (Exception e)
             {
                 if (e is not WebSocketException && e is not TaskCanceledException)
-                    throw e;
+                    throw;
 
                 Console.WriteLine(e.Message);
                 // Reconnect
