@@ -73,7 +73,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     }
 
     [SlashCommand("start-server", "Starts the Minecraft server")]
-    public async Task StartServerAsync([Summary(description: "The id of the server to start"), Autocomplete(typeof(ServerNameAutocompleter))] int serverId)
+    public async Task StartServerAsync([Summary(description: "The server to start"), Autocomplete(typeof(ServerNameAutocompleter))] int serverId)
     {
         await DeferAsync();
 
@@ -115,6 +115,49 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             embed.WithDescription("The server failed to start or took too long to start. Please try again later.");
             embed.WithColor(Color.Red);
             await DiscordClient.UpdateStatus(false, "Server's are failing to start");
+        }
+        await ModifyOriginalResponseAsync(original => original.Embed = embed.Build());
+    }
+
+    [SlashCommand("stop-server", "Stops the Minecraft server")]
+    public async Task StopServerAsync([Summary(description: "The server to stop"), Autocomplete(typeof(ServerNameAutocompleter))] int serverId)
+    {
+        await DeferAsync();
+
+        // Send stop command
+        var stopOp = CraftyControl.CraftyControl.Instance.StopServer(serverId);
+
+        // Start getting details for server (name, and in the future port)
+        var serverStats = await CraftyControl.CraftyControl.Instance.GetServerStatusAsync(serverId);
+        if (serverStats?.ServerInfo == null)
+        {
+            await RespondAsync("Couldn't find the server. Please try again later.", ephemeral: true);
+            await DiscordClient.UpdateStatus(false, "Can't fetch server list");
+            return;
+        }
+
+        // Build embed
+        var embed = new EmbedBuilder();
+        embed.WithTitle($"Stopping {serverStats.ServerInfo.Name}...");
+        embed.WithColor(Color.Gold);
+        embed.AddField("Server ID", serverStats.ServerInfo.Id);
+        embed.AddField("Port", serverStats.ServerInfo.Port);
+        embed.WithFooter("Server UUID: " + serverStats.ServerInfo.UUID);
+        await ModifyOriginalResponseAsync(original => original.Embed = embed.Build());
+
+        // Wait for server to finish stopping
+        var stopResult = await stopOp;
+
+        // Update embed
+        if (stopResult)
+        {
+            embed.WithTitle($"{serverStats.ServerInfo.Name} Stopped");
+            embed.WithColor(Color.Green);
+        } else {
+            embed.WithTitle($"{serverStats.ServerInfo.Name} Failed to Stop");
+            embed.WithDescription("The server failed to stop or took too long to stop. Please try again later.");
+            embed.WithColor(Color.Red);
+            await DiscordClient.UpdateStatus(false, "Server's are failing to stop");
         }
         await ModifyOriginalResponseAsync(original => original.Embed = embed.Build());
     }

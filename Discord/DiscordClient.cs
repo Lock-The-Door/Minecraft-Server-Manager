@@ -8,10 +8,12 @@ namespace Minecraft_Server_Bot.Discord;
 
 class DiscordClient
 {
-    private readonly static DiscordSocketClient _socketClient = new(new DiscordSocketConfig() {
+    private readonly static DiscordSocketClient _socketClient = new(new DiscordSocketConfig()
+    {
         LogLevel = LogSeverity.Debug,
     });
-    private readonly static InteractionService _interactionService = new(_socketClient, new InteractionServiceConfig() {
+    private readonly static InteractionService _interactionService = new(_socketClient, new InteractionServiceConfig()
+    {
         AutoServiceScopes = true,
         DefaultRunMode = RunMode.Async,
         EnableAutocompleteHandlers = true,
@@ -81,10 +83,13 @@ class DiscordClient
 
         if (working)
         {
-            var statusOp = _socketClient.SetStatusAsync(UserStatus.Online);
             _timer.Stop();
-            await _socketClient.SetCustomStatusAsync("Managing Minecraft Servers");
-            await statusOp;
+            if (_socketClient.Status != UserStatus.Online)
+            {
+                var statusOp = _socketClient.SetStatusAsync(UserStatus.Online);
+                await _socketClient.SetCustomStatusAsync("Managing Minecraft Servers");
+                await statusOp;
+            }
 
             if (message != null)
                 await _ownerChannel.SendMessageAsync(message);

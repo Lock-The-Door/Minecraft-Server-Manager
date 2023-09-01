@@ -197,7 +197,14 @@ class CraftyControl
         return !cancellation.IsCancellationRequested;
     }
 
-    public async Task StopServer(MinecraftServer server)
+    public async Task<bool> StopServer(int serverId)
+    {
+        MinecraftServer? server = MinecraftServers.FirstOrDefault(s => s.ServerInfo.Id == serverId);
+        if (server != null)
+            return await StopServer(server);
+        return false;
+    }
+    public async Task<bool> StopServer(MinecraftServer server)
     {
         try
         {
@@ -209,9 +216,19 @@ class CraftyControl
         catch (HttpRequestException e)
         {
             Console.WriteLine(e.Message);
+            return false;
         }
+        
+        // Wait for server to finish stopping
+        var cancellation = new CancellationTokenSource(120000).Token;
+        while (server.Status.Running && !cancellation.IsCancellationRequested)
+            await Task.Delay(1000);
+
+        if (cancellation.IsCancellationRequested)
+            return false;
 
         await ServerStopped.Invoke(this, new ServerStateChangeEventArgs(server));
+        return true;
     }
 
     public async Task UpdateServerStatuses(List<MinecraftServerWrapper>? serverList = null)
