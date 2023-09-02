@@ -6,9 +6,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Minecraft_Server_Bot.CraftyControl;
 
-class CraftyControl
+class CraftyControlManager
 {
-    public static CraftyControl Instance { get; private set; } = new(CraftyControlConfiguration.Instance);
+    public static CraftyControlManager Instance { get; private set; } = new(CraftyControlConfiguration.Instance);
 
     public static void OverrideInstance(CraftyControlConfiguration config)
     {
@@ -17,7 +17,7 @@ class CraftyControl
         foreach (var server in Instance.MinecraftServers)
             server.DisposeSocket();
 
-        Instance = new CraftyControl(config);
+        Instance = new CraftyControlManager(config);
     }
 
     private static Regex _doneMessageRegex = new(@"\[Server thread\/INFO\]<\/span>(?: \[minecraft\/DedicatedServer\])?: Done \(\d+.\d{3}s\)!", RegexOptions.Compiled);
@@ -29,7 +29,7 @@ class CraftyControl
     public delegate Task ServerStatusChangeEventHandler(object? sender, ServerStateChangeEventArgs e);
     public static event ServerStatusChangeEventHandler ServerStopped;
 
-    private CraftyControl(CraftyControlConfiguration config)
+    private CraftyControlManager(CraftyControlConfiguration config)
     {
         Uri baseAddress = config.BaseAddress;
         string token = config.Token;

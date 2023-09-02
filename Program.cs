@@ -21,7 +21,7 @@ static class Program
     static async Task MainAsync(string[] args)
     {
         // Handle Events
-        CraftyControl.CraftyControl.ServerStopped += HandleServerStop;
+        CraftyControl.CraftyControlManager.ServerStopped += HandleServerStop;
 
         string? discordToken = ConfigurationManager.AppSettings.Get("Discord:Token");
         if (discordToken == null)
@@ -31,6 +31,7 @@ static class Program
         }
 
         _ = DiscordClient.Initialize(discordToken);
+        _ = CraftyControlManager.Instance.UpdateServerStatuses();
 
         // Block until exit
         await Task.Delay(-1);
@@ -39,7 +40,7 @@ static class Program
     // Poll Minecraft Servers to detect idle servers
     static async Task PollMinecraftServers()
     {
-        var servers = await CraftyControl.CraftyControl.Instance.FetchServersAsync();
+        var servers = await CraftyControl.CraftyControlManager.Instance.FetchServersAsync();
         if (servers == null)
             return;
 
@@ -52,8 +53,8 @@ static class Program
     static async Task HandleServerStop(object? source, ServerStateChangeEventArgs stoppedServer)
     {
         // Check if all servers off
-        await CraftyControl.CraftyControl.Instance.UpdateServerStatuses();
-        List<MinecraftServer> servers = CraftyControl.CraftyControl.Instance.MinecraftServers;
+        await CraftyControl.CraftyControlManager.Instance.UpdateServerStatuses();
+        List<MinecraftServer> servers = CraftyControl.CraftyControlManager.Instance.MinecraftServers;
         if (servers == null || servers.Count == 0)
         {
             await GCloudManager.Instance.StopInstance();
@@ -68,7 +69,7 @@ static class Program
                 case MinecraftServerState.Starting:
                     return;
                 case MinecraftServerState.Unknown:
-                    CraftyControl.CraftyControl.Instance.UpdateServerStatuses().Wait();
+                    CraftyControl.CraftyControlManager.Instance.UpdateServerStatuses().Wait();
                     return;
                 case MinecraftServerState.Idle:
                     if (server.IdleHours < 1)

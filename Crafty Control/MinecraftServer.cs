@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
 using Minecraft_Server_Bot.Discord;
@@ -41,7 +42,7 @@ public class MinecraftServer
 
     public async Task UpdateStatus(MinecraftServerStatusWrapper? status = null, MinecraftServerState newState = MinecraftServerState.Unknown)
     {
-        status ??= await CraftyControl.Instance.GetServerStatusAsync(ServerInfo.Id);
+        status ??= await CraftyControlManager.Instance.GetServerStatusAsync(ServerInfo.Id);
         newState = newState == MinecraftServerState.Unknown ? State : newState;
         if (status == null)
         {
@@ -64,6 +65,8 @@ public class MinecraftServer
 
             // await DiscordClient.UpdateStatus(true, "Warning: Server state is inconsistent: " + State.ToString());
             Console.WriteLine("Warning: Server state is inconsistent: " + State.ToString() + " Running: " + Status.Running);
+            StackTrace stackTrace = new StackTrace();
+            Console.WriteLine(stackTrace);
         }
     }
 
@@ -76,10 +79,14 @@ public class MinecraftServer
     {
         var oldState = State;
         State = newState;
+
+        Console.WriteLine($"Server {ServerInfo.Id} state changed to {State} from {oldState}");
+
         switch (State)
         {
             case MinecraftServerState.Running:
-                WebSocket ??= await CraftyControl.Instance.CreateWebSocketAsync(ServerInfo.Id);
+            case MinecraftServerState.Starting:
+                WebSocket ??= await CraftyControlManager.Instance.CreateWebSocketAsync(ServerInfo.Id);
                 break;
             case MinecraftServerState.Stopped:
                 WebSocket = null;
@@ -95,13 +102,15 @@ public class MinecraftServer
         if (WebSocket == null)
             return;
 
+        Console.WriteLine($"Listening to websocket for server {ServerInfo.Id}");
+
         var buffer = new byte[1024 * 4];
         while (true)
         {
             if (WebSocket == null || WebSocket.State != WebSocketState.Open)
             {
                 if (Status.Running)
-                    WebSocket = await CraftyControl.Instance.CreateWebSocketAsync(ServerInfo.Id);
+                    WebSocket = await CraftyControlManager.Instance.CreateWebSocketAsync(ServerInfo.Id);
                 else
                     return;
             }
@@ -120,7 +129,7 @@ public class MinecraftServer
                 // Reconnect if server is still online
                 WebSocket?.Abort();
                 if (Status.Running)
-                    WebSocket = await CraftyControl.Instance.CreateWebSocketAsync(ServerInfo.Id);
+                    WebSocket = await CraftyControlManager.Instance.CreateWebSocketAsync(ServerInfo.Id);
                 continue;
             }
             if (result.MessageType == WebSocketMessageType.Close)
@@ -146,10 +155,9 @@ public class MinecraftServer
                     {
                         var serverDetails = (messageObject.Data as JObject)!.ToObject<ServerDetailUpdate>();
 
-                        if (serverDetails!.Running && State == MinecraftServerState.Stopped || State == MinecraftServerState.Stopping || State == MinecraftServerState.Unknown)
+                        if (serverDetails!.Running && State != MinecraftServerState.Starting)
                         {
-                            if (State == MinecraftServerState.Running)
-                                await UpdateState(serverDetails.OnlineCount > 0 ? MinecraftServerState.Running : MinecraftServerState.Idle);
+                            await UpdateState(serverDetails.OnlineCount > 0 ? MinecraftServerState.Running : MinecraftServerState.Idle);
                         }
                         else if (!serverDetails.Running && State != MinecraftServerState.Stopped)
                         {
@@ -175,7 +183,7 @@ public class MinecraftServer
 
                         if (hoursIdle > 1) //TODO: Make this configurable
                         {
-                            await CraftyControl.Instance.StopServer(this);
+                            await CraftyControlManager.Instance.StopServer(this);
                         }
                         break;
                     }
