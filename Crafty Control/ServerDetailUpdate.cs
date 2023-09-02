@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 namespace Minecraft_Server_Manager.CraftyControl;
 
 record ServerDetailUpdate {
+    #pragma warning disable CS0649
     [JsonProperty("id")]
     public required int ServerId;
     [JsonProperty("started")]
@@ -12,6 +13,7 @@ record ServerDetailUpdate {
         get => _started is string s ? DateTime.Parse(s) : null;
         set => _started = value;
     }
+    #pragma warning disable CS0649
     [JsonProperty("running")]
     public required bool Running;
     [JsonProperty("online")]
