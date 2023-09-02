@@ -46,7 +46,7 @@ class DiscordClient
 
         var added = await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), null);
         Console.WriteLine($"Added {added.Count()} modules");
-        await _interactionService.RegisterCommandsToGuildAsync(773278405042896927);
+        // await _interactionService.RegisterCommandsToGuildAsync(773278405042896927);
         await _interactionService.RegisterCommandsGloballyAsync();
         _socketClient.InteractionCreated += HandleInteractionAsync;
 
