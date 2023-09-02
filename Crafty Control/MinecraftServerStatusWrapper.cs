@@ -3,23 +3,34 @@ using Newtonsoft.Json;
 namespace Minecraft_Server_Manager.CraftyControl;
 
 public record MinecraftServerStatusWrapper {
-    public bool Running { get; set; }
+    public required bool Running { get; set; }
 
     [JsonProperty("server_id")]
     public required MinecraftServerWrapper ServerInfo;
 
     [JsonProperty("started")]
     private object? _started;
-    public DateTime? Started => _started is string s ? DateTime.Parse(s) : null;
+    public DateTime? Started 
+    {
+        get => _started is string s ? DateTime.Parse(s) : null;
+        set => _started = value;
+    }
 
     [JsonProperty("desc")]
     public string? Description;
 
     [JsonProperty("online")]
     private object? _online;
-    public int OnlineCount => _online is int i ? i : 0;
+    public long OnlineCount 
+    {
+        get => _online as long? ?? 0;
+        set => _online = value;
+    }
 
     [JsonProperty("max")]
     private object? _max;
-    public int MaxPlayers => _max is int i ? i : 0;
+    public long MaxPlayers {
+        get => _max as long? ?? 0;
+        set => _max = value;
+    }
 }
