@@ -14,7 +14,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     public async Task ListServersAsync()
     {
         _ = DeferAsync();
-        var fetchOp = CraftyControl.CraftyControlManager.Instance.FetchServersAsync()
+        var fetchOp = CraftyControlManager.Instance.FetchServersAsync()
             .ContinueWith(async servers => servers.Result != null ? await DatabaseApi.Instance.FilterMinecraftServers(servers.Result, Context.User.Id, Context.Guild?.Id) : null);
 
         // Build embed
@@ -38,7 +38,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         foreach (var server in filteredServers)
         {
             var minDelay = Task.Delay(100);
-            var serverStats = await CraftyControl.CraftyControlManager.Instance.GetServerStatusAsync(server.Id);
+            var serverStats = await CraftyControlManager.Instance.GetServerStatusAsync(server.Id);
 
             if (serverStats == null)
             {
@@ -78,11 +78,11 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         await DeferAsync();
 
         // Send start command
-        var startOp = CraftyControl.CraftyControlManager.Instance.StartServer(serverId);
+        var startOp = CraftyControlManager.Instance.StartServer(serverId);
         var gcloudOp = GCloudManager.Instance.StartInstance();
 
         // Start getting details for server (name, and in the future port)
-        var serverStats = await CraftyControl.CraftyControlManager.Instance.GetServerStatusAsync(serverId);
+        var serverStats = await CraftyControlManager.Instance.GetServerStatusAsync(serverId);
         if (serverStats?.ServerInfo == null)
         {
             await RespondAsync("Couldn't find the server. Please try again later.", ephemeral: true);
@@ -123,7 +123,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     public async Task StopServerAsync([Summary(description: "The server to stop"), Autocomplete(typeof(ServerNameAutocompleter))] int serverId)
     {
         // Check if server is running idle
-        var server = CraftyControl.CraftyControlManager.Instance.MinecraftServers.FirstOrDefault(server => server.ServerInfo.Id == serverId);
+        var server = CraftyControlManager.Instance.MinecraftServers.FirstOrDefault(server => server.ServerInfo.Id == serverId);
         if (server == null)
         {
             await RespondAsync("Couldn't find the server. Please try again later.", ephemeral: true);
@@ -147,10 +147,10 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         await DeferAsync();
 
         // Send stop command
-        var stopOp = CraftyControl.CraftyControlManager.Instance.StopServer(serverId);
+        var stopOp = CraftyControlManager.Instance.StopServer(serverId);
 
         // Start getting details for server (name, and in the future port)
-        var serverStats = await CraftyControl.CraftyControlManager.Instance.GetServerStatusAsync(serverId);
+        var serverStats = await CraftyControlManager.Instance.GetServerStatusAsync(serverId);
         if (serverStats?.ServerInfo == null)
         {
             await RespondAsync("Couldn't find the server. Please try again later.", ephemeral: true);
@@ -205,7 +205,7 @@ public class ServerNameAutocompleter : AutocompleteHandler
         var currentValue = (current?.Value ?? "").ToString()!.ToLower().Trim();
 
         // Fetch servers
-        List<MinecraftServerWrapper>? servers = await CraftyControl.CraftyControlManager.Instance.FetchServersAsync();
+        List<MinecraftServerWrapper>? servers = await CraftyControlManager.Instance.FetchServersAsync();
         if (servers == null)
             return AutocompletionResult.FromError(new Exception("There was an error fetching the server list. Please try again later"));
         List<MinecraftServerWrapper> filteredServers = await DatabaseApi.Instance.FilterMinecraftServers(servers, context.User.Id, context.Guild?.Id);

@@ -21,7 +21,7 @@ static class Program
     static async Task MainAsync(string[] args)
     {
         // Handle Events
-        CraftyControl.CraftyControlManager.ServerStopped += HandleServerStop;
+        CraftyControlManager.ServerStopped += HandleServerStop;
 
         string? discordToken = ConfigurationManager.AppSettings.Get("Discord:Token");
         if (discordToken == null)
@@ -37,24 +37,12 @@ static class Program
         await Task.Delay(-1);
     }
 
-    // Poll Minecraft Servers to detect idle servers
-    static async Task PollMinecraftServers()
-    {
-        var servers = await CraftyControl.CraftyControlManager.Instance.FetchServersAsync();
-        if (servers == null)
-            return;
-
-        foreach (var server in servers)
-        {
-        }
-    }
-
     // Turn off GCloud instance if all servers are off/idle
     static async Task HandleServerStop(object? source, ServerStateChangeEventArgs stoppedServer)
     {
         // Check if all servers off
-        await CraftyControl.CraftyControlManager.Instance.UpdateServerStatuses();
-        List<MinecraftServer> servers = CraftyControl.CraftyControlManager.Instance.MinecraftServers;
+        await CraftyControlManager.Instance.UpdateServerStatuses();
+        List<MinecraftServer> servers = CraftyControlManager.Instance.MinecraftServers;
         if (servers == null || servers.Count == 0)
         {
             await GCloudManager.Instance.StopInstance();
@@ -69,7 +57,7 @@ static class Program
                 case MinecraftServerState.Starting:
                     return;
                 case MinecraftServerState.Unknown:
-                    CraftyControl.CraftyControlManager.Instance.UpdateServerStatuses().Wait();
+                    CraftyControlManager.Instance.UpdateServerStatuses().Wait();
                     return;
                 case MinecraftServerState.Idle:
                     if (server.IdleHours < 1)
