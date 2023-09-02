@@ -154,17 +154,24 @@ public class MinecraftServer
                     try
                     {
                         var serverDetails = (messageObject.Data as JObject)!.ToObject<ServerDetailUpdate>();
+                        if (serverDetails == null)
+                            continue;
+                        Status.Running = serverDetails.Running;
+                        Status.Started = serverDetails.Started;
+                        Status.OnlineCount = serverDetails.OnlineCount;
+                        Status.MaxPlayers = serverDetails.MaxPlayers;
 
-                        if (serverDetails!.Running && State != MinecraftServerState.Starting)
+
+                        if (Status.Running && State != MinecraftServerState.Starting)
                         {
-                            await UpdateState(serverDetails.OnlineCount > 0 ? MinecraftServerState.Running : MinecraftServerState.Idle);
+                            await UpdateState(Status.OnlineCount > 0 ? MinecraftServerState.Running : MinecraftServerState.Idle);
                         }
-                        else if (!serverDetails.Running && State != MinecraftServerState.Stopped)
+                        else if (!Status.Running && State != MinecraftServerState.Stopped)
                         {
                             await UpdateState(MinecraftServerState.Stopped);
                         }
 
-                        if (serverDetails.OnlineCount > 0)
+                        if (Status.OnlineCount > 0)
                             LastPlayerTime = DateTime.UtcNow;
                         else if (serverDetails.PlayersCache.Count() > 0)
                         {
