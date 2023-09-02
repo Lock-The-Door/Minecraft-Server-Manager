@@ -1,7 +1,6 @@
 using System.Reflection;
 using Discord;
 using Discord.Interactions;
-using Discord.Rest;
 using Discord.WebSocket;
 
 namespace Minecraft_Server_Manager.Discord;

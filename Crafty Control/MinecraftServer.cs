@@ -31,7 +31,7 @@ public class MinecraftServer
     public DateTime? LastPlayerTime { get; private set; } = null;
 
     public delegate void ServerStateChangedHandler(object sender, ServerStateChangeEventArgs e);
-    public static event ServerStateChangedHandler StateChanged;
+    public static event ServerStateChangedHandler? StateChanged;
 
     public MinecraftServer(MinecraftServerStatusWrapper status, WebSocket? webSocket = null)
     {
@@ -94,7 +94,7 @@ public class MinecraftServer
         }
 
         if (oldState != State)
-            StateChanged.Invoke(this, new ServerStateChangeEventArgs(this));
+            StateChanged?.Invoke(this, new ServerStateChangeEventArgs(this));
     }
 
     private async Task ListenToWebSocket()

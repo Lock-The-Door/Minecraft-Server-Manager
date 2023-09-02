@@ -27,7 +27,7 @@ class CraftyControlManager
     private readonly string _webSocketCookie = "";
     public List<MinecraftServer> MinecraftServers { get; private set; } = new();
     public delegate Task ServerStatusChangeEventHandler(object? sender, ServerStateChangeEventArgs e);
-    public static event ServerStatusChangeEventHandler ServerStopped;
+    public static event ServerStatusChangeEventHandler? ServerStopped;
 
     private CraftyControlManager(CraftyControlConfiguration config)
     {
@@ -44,7 +44,7 @@ class CraftyControlManager
 
         MinecraftServer.StateChanged += async (sender, e) =>
         {
-            if (e.NewState == MinecraftServerState.Stopped)
+            if (ServerStopped != null && e.NewState == MinecraftServerState.Stopped)
                 await ServerStopped.Invoke(sender, e);
         };
 
@@ -233,7 +233,8 @@ class CraftyControlManager
         if (cancellation.IsCancellationRequested)
             return false;
 
-        await ServerStopped.Invoke(this, new ServerStateChangeEventArgs(server));
+        if (ServerStopped != null)
+            await ServerStopped.Invoke(this, new ServerStateChangeEventArgs(server));
         return true;
     }
 
