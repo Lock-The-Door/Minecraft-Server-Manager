@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Minecraft_Server_Bot.CraftyControl;
+namespace Minecraft_Server_Manager.CraftyControl;
 
 record ServerDetailUpdate {
     [JsonProperty("id")]

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
-    <RootNamespace>Minecraft_Server_Bot</RootNamespace>
+    <RootNamespace>Minecraft_Server_Manager</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -14,4 +14,14 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0-preview3.23201.1" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
   </ItemGroup>
+  <ItemGroup>
+    <Configuration Include="credentials.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Configuration>
+  </ItemGroup>
+
+  <Target Name="Copy" AfterTargets="Publish">
+    <Copy SourceFiles="@(Configuration)" DestinationFolder="$(PublishDir)" />
+    <Message Text="Copied @(Configuration) to $(PublishDir)" />
+  </Target>
 </Project>

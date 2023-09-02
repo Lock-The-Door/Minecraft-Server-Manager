@@ -1,9 +1,9 @@
 ﻿using System.Configuration;
-using Minecraft_Server_Bot.CraftyControl;
-using Minecraft_Server_Bot.Discord;
-using Minecraft_Server_Bot.GCloud;
+using Minecraft_Server_Manager.CraftyControl;
+using Minecraft_Server_Manager.Discord;
+using Minecraft_Server_Manager.GCloud;
 
-namespace Minecraft_Server_Bot;
+namespace Minecraft_Server_Manager;
 
 static class Program
 {

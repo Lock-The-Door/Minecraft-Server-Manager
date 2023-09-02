@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Minecraft_Server_Bot.CraftyControl;
+namespace Minecraft_Server_Manager.CraftyControl;
 
 class CraftyControlManager
 {

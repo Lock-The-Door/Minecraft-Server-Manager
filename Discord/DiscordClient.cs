@@ -4,7 +4,7 @@ using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
 
-namespace Minecraft_Server_Bot.Discord;
+namespace Minecraft_Server_Manager.Discord;
 
 class DiscordClient
 {

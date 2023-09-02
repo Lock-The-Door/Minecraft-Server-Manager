@@ -1,6 +1,6 @@
 using System.Configuration;
 
-namespace Minecraft_Server_Bot.Discord;
+namespace Minecraft_Server_Manager.Discord;
 
 public class DiscordConfiguration
 {

@@ -1,8 +1,8 @@
 using System.Data;
 using Microsoft.Data.SqlClient;
-using Minecraft_Server_Bot.CraftyControl;
+using Minecraft_Server_Manager.CraftyControl;
 
-namespace Minecraft_Server_Bot.Database;
+namespace Minecraft_Server_Manager.Database;
 
 class DatabaseApi
 {

@@ -1,6 +1,6 @@
 using System.Configuration;
 
-namespace Minecraft_Server_Bot.Database;
+namespace Minecraft_Server_Manager.Database;
 
 public class DatabaseConfiguration
 {

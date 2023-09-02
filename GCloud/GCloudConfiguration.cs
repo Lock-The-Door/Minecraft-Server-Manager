@@ -1,6 +1,6 @@
 using System.Configuration;
 
-namespace Minecraft_Server_Bot.GCloud;
+namespace Minecraft_Server_Manager.GCloud;
 
 public class GCloudConfiguration
 {

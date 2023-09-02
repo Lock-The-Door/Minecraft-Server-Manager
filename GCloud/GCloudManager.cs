@@ -1,6 +1,6 @@
 using Google.Cloud.Compute.V1;
 
-namespace Minecraft_Server_Bot.GCloud;
+namespace Minecraft_Server_Manager.GCloud;
 
 class GCloudManager
 {

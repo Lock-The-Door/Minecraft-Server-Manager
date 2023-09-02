@@ -1,11 +1,11 @@
 using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
-using Minecraft_Server_Bot.Discord;
+using Minecraft_Server_Manager.Discord;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Minecraft_Server_Bot.CraftyControl;
+namespace Minecraft_Server_Manager.CraftyControl;
 
 public class MinecraftServer
 {

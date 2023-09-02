@@ -2,11 +2,11 @@ using System.Text.RegularExpressions;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Minecraft_Server_Bot.CraftyControl;
-using Minecraft_Server_Bot.Database;
-using Minecraft_Server_Bot.GCloud;
+using Minecraft_Server_Manager.CraftyControl;
+using Minecraft_Server_Manager.Database;
+using Minecraft_Server_Manager.GCloud;
 
-namespace Minecraft_Server_Bot.Discord;
+namespace Minecraft_Server_Manager.Discord;
 
 public class Commands : InteractionModuleBase<SocketInteractionContext>
 {

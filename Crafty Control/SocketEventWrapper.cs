@@ -1,4 +1,4 @@
-namespace Minecraft_Server_Bot.CraftyControl;
+namespace Minecraft_Server_Manager.CraftyControl;
 
 record SocketEventWrapper {
     public required string Event { get; set; }
