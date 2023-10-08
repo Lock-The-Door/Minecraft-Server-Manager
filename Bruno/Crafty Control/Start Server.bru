@@ -1,0 +1,15 @@
+meta {
+  name: Start Server
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/servers/{{serverId}}/action/start_server
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

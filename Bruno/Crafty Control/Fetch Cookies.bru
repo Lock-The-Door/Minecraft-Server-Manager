@@ -1,0 +1,15 @@
+meta {
+  name: Fetch Cookies
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{host}}
+  body: none
+  auth: none
+}
+
+script:post-response {
+  bru.setEnvVar("xsrfCookie", res.getHeader("set-cookie"));
+}

@@ -1,0 +1,15 @@
+meta {
+  name: List Servers
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/servers
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
