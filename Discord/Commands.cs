@@ -61,6 +61,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
                 embedField.Value += $"Status: Offline";
 
             embedField.Value += "\nPort: " + server.Port;
+            embedField.Value += "\nUUID: " + server.UUID;
 
             embedField.WithIsInline(false);
 
