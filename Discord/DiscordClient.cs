@@ -9,7 +9,9 @@ static class DiscordClient
 {
     private readonly static DiscordSocketClient _socketClient = new(new DiscordSocketConfig()
     {
+#if DEBUG
         LogLevel = LogSeverity.Debug,
+#endif
     });
     private readonly static InteractionService _interactionService = new(_socketClient, new InteractionServiceConfig()
     {

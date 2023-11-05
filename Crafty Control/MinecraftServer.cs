@@ -125,7 +125,7 @@ public class MinecraftServer
                 if (e is not WebSocketException && e is not TaskCanceledException)
                     throw;
 
-                Console.WriteLine(e.Message);
+                Console.WriteLine($"While listening to server {ServerInfo.Id}:" + e.Message);
                 // Reconnect if server is still online
                 WebSocket?.Abort();
                 if (Status.Running)

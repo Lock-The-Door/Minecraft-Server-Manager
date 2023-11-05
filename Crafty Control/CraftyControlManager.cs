@@ -152,21 +152,21 @@ class CraftyControlManager
         sendMessage.EnsureSuccessStatusCode();
         var cancellationSource = new CancellationTokenSource(120000);
         CancellationToken cancellation = cancellationSource.Token;
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
         while (!cancellation.IsCancellationRequested)
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            while (stopwatch.Elapsed < TimeSpan.FromSeconds(15))
+            if (TimeSpan.FromSeconds(5) < stopwatch.Elapsed)
             {
                 // Poll to see if stopped by error
                 var status = await GetServerStatusAsync(serverId);
                 if (status?.Running == false)
                 {
+                    Console.WriteLine("Server stopped while trying to start");
                     cancellationSource.Cancel();
                     break;
                 }
             }
-            stopwatch.Stop();
 
             ArraySegment<byte> buffer = new(new byte[1024]);
             try
@@ -196,6 +196,7 @@ class CraftyControlManager
             // else if (terminalLine.Line.Contains("mc-log-error"))
             //     cancellationSource.Cancel();
         }
+        stopwatch.Stop();
 
         if (server == null)
         {
@@ -301,7 +302,7 @@ class CraftyControlManager
         }
         catch (WebSocketException e)
         {
-            Console.WriteLine(e.Message);
+            Console.WriteLine("While creating websocket: " + e.Message);
         }
         return socket;
     }
