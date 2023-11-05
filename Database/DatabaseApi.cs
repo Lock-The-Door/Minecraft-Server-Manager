@@ -71,4 +71,31 @@ class DatabaseApi
                 return false;
         });
     }
+
+    public async Task<bool> IsUserAllowed(Guid serverUuid, ulong userId, ulong? guildId)
+    {
+        bool isAllowed = false;
+    
+        using (var connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand("dbo.IsUserAllowed", connection))
+        {
+            command.CommandType = CommandType.StoredProcedure;
+            command.Parameters.Add("@server_uuid", SqlDbType.UniqueIdentifier).Value = serverUuid;
+            command.Parameters.Add("@user_id", SqlDbType.Decimal, 19).Value = userId;
+            command.Parameters.Add("@guild_id", SqlDbType.Decimal, 19).Value = guildId.HasValue ? guildId : DBNull.Value;
+
+            try
+            {
+                await connection.OpenAsync();
+                isAllowed = (bool) (await command.ExecuteScalarAsync() ?? false);
+            }
+            catch (SqlException e)
+            {
+                Console.WriteLine(e.ToString());
+                return false;
+            }
+        }
+
+        return isAllowed;
+    }
 }

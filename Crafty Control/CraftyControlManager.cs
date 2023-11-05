@@ -24,11 +24,12 @@ class CraftyControlManager
 
     private readonly HttpClient _httpClient;
     private readonly Uri _websocketUri;
-    private readonly string _webSocketCookie = "";
+    private readonly string _webSocketCookie;
     public List<MinecraftServer> MinecraftServers { get; private set; } = new();
     public delegate Task ServerStatusChangeEventHandler(object? sender, ServerStateChangeEventArgs e);
     public static event ServerStatusChangeEventHandler? ServerStopped;
 
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable. (_webSocketCookie is initialized in constructor in the while loop)
     private CraftyControlManager(CraftyControlConfiguration config)
     {
         Uri baseAddress = config.BaseAddress;
@@ -74,6 +75,12 @@ class CraftyControlManager
         // Wait for server list to finish fetching
         var servers = serverFetchOp.Result;
         _ = UpdateServerStatuses(servers);
+    }
+
+    public MinecraftServer? GetServer(int serverId)
+    {
+        var server = MinecraftServers.Find(s => s.ServerInfo.Id == serverId);
+        return server;
     }
 
     public async Task<List<MinecraftServerWrapper>?> FetchServersAsync()

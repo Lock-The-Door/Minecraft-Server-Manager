@@ -77,6 +77,21 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     {
         await DeferAsync();
 
+        // Check for permissions
+        MinecraftServer? server = CraftyControlManager.Instance.GetServer(serverId);
+        bool isAllowed;
+        if (server == null)
+            isAllowed = false;
+        else
+            isAllowed = await DatabaseApi.Instance.IsUserAllowed(server.ServerInfo.UUID, Context.User.Id, Context.Guild?.Id);
+
+        if (!isAllowed)
+        {
+            await RespondAsync("You are not allowed to start this server", ephemeral: true);
+            return;
+        }
+
+
         // Send start command
         var startOp = CraftyControlManager.Instance.StartServer(serverId);
         var gcloudOp = GCloudManager.Instance.StartInstance();
