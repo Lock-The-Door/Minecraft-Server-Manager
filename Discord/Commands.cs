@@ -136,15 +136,23 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [SlashCommand("stop-server", "Stops the Minecraft server")]
     public async Task StopServerAsync([Summary(description: "The server to stop"), Autocomplete(typeof(ServerNameAutocompleter))] int serverId)
-    {
-        // Check if server is running idle
-        MinecraftServer? server = CraftyControlManager.Instance.MinecraftServers.Find(server => server.ServerInfo.Id == serverId);
+    {   
+        // Check for permissions
+        MinecraftServer? server = CraftyControlManager.Instance.GetServer(serverId);
+        bool isAllowed;
         if (server == null)
+            isAllowed = false;
+        else
+            isAllowed = await DatabaseApi.Instance.IsUserAllowed(server.ServerInfo.UUID, Context.User.Id, Context.Guild?.Id);
+
+        if (!isAllowed)
         {
-            await RespondAsync("Couldn't find the server. Please try again later.", ephemeral: true);
+            await RespondAsync("You are not allowed to stop this server", ephemeral: true);
             return;
         }
-        switch (server.State)
+
+        // Check if server is running idle
+        switch (server!.State)
         {
             case MinecraftServerState.Unknown:
             case MinecraftServerState.Stopped:
