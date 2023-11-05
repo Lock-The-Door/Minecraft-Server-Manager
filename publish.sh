@@ -1,1 +1,1 @@
-dotnet publish -c Release --os linux --arch x64
+dotnet publish "Minecraft Server Manager.csproj" -c Release --os linux --arch x64
