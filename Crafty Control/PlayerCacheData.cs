@@ -1,3 +1,4 @@
+using System.Globalization;
 using Newtonsoft.Json;
 
 namespace Minecraft_Server_Manager.CraftyControl;
@@ -13,5 +14,5 @@ record PlayerCacheData {
     public required string LastSeen { get; set; }
 
     [JsonIgnore]
-    public DateTime LastSeenDateTime => DateTime.ParseExact(LastSeen, "dd/MM/yyyy HH:mm", null);
+    public DateTime LastSeenDateTime => DateTime.ParseExact(LastSeen, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
 }

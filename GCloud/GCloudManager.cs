@@ -6,11 +6,11 @@ class GCloudManager
 {
     public static GCloudManager Instance { get; private set;} = new GCloudManager(GCloudConfiguration.Instance);
 
-    private InstancesClient _instancesClient;
+    private readonly InstancesClient _instancesClient;
 
-    private string projectId;
-    private string zone;
-    private string instance;
+    private readonly string projectId;
+    private readonly string zone;
+    private readonly string instance;
 
     public string? ExternalIp { get; private set; } = null;
     private string? Status = null;

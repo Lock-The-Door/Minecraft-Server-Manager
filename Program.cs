@@ -7,7 +7,7 @@ namespace Minecraft_Server_Manager;
 
 static class Program
 {
-    static void Main(string[] args) => MainAsync(args).GetAwaiter().GetResult();
+    static void Main(string[] args) => MainAsync().Wait();
     // static void Main(string[] args)
     // {
     //     Configuration configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
@@ -18,7 +18,7 @@ static class Program
     //     configFile.Save(ConfigurationSaveMode.Modified);
     // }
 
-    static async Task MainAsync(string[] args)
+    static async Task MainAsync()
     {
         // Handle Events
         CraftyControlManager.ServerStopped += HandleServerStop;

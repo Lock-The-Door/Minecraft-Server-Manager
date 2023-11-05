@@ -1,5 +1,3 @@
-using Newtonsoft.Json.Linq;
-
 namespace Minecraft_Server_Manager.CraftyControl;
 
 public class CraftyControlWrapper {

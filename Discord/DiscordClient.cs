@@ -5,7 +5,7 @@ using Discord.WebSocket;
 
 namespace Minecraft_Server_Manager.Discord;
 
-class DiscordClient
+static class DiscordClient
 {
     private readonly static DiscordSocketClient _socketClient = new(new DiscordSocketConfig()
     {
@@ -45,7 +45,9 @@ class DiscordClient
 
         var added = await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), null);
         Console.WriteLine($"Added {added.Count()} modules");
-        // await _interactionService.RegisterCommandsToGuildAsync(773278405042896927);
+#if DEBUG
+        await _interactionService.RegisterCommandsToGuildAsync(773278405042896927);
+#endif
         await _interactionService.RegisterCommandsGloballyAsync();
         _socketClient.InteractionCreated += HandleInteractionAsync;
 

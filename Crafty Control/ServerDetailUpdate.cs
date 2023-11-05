@@ -1,3 +1,4 @@
+using System.Globalization;
 using Newtonsoft.Json;
 
 namespace Minecraft_Server_Manager.CraftyControl;
@@ -10,7 +11,7 @@ record ServerDetailUpdate {
     private object? _started;
     public DateTime? Started
     {
-        get => _started is string s ? DateTime.Parse(s) : null;
+        get => _started is string s ? DateTime.Parse(s, CultureInfo.InvariantCulture) : null;
         set => _started = value;
     }
     #pragma warning disable CS0649

@@ -75,7 +75,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("start-server", "Starts the Minecraft server")]
     public async Task StartServerAsync([Summary(description: "The server to start"), Autocomplete(typeof(ServerNameAutocompleter))] int serverId)
     {
-        await DeferAsync();
 
         // Check for permissions
         MinecraftServer? server = CraftyControlManager.Instance.GetServer(serverId);
@@ -91,6 +90,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
+        await DeferAsync();
 
         // Send start command
         var startOp = CraftyControlManager.Instance.StartServer(serverId);
@@ -100,7 +100,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var serverStats = await CraftyControlManager.Instance.GetServerStatusAsync(serverId);
         if (serverStats?.ServerInfo == null)
         {
-            await RespondAsync("Couldn't find the server. Please try again later.", ephemeral: true);
+            await FollowupAsync("Couldn't find the server. Please try again later.");
             await DiscordClient.UpdateStatus(false, "Can't fetch server list");
             return;
         }
@@ -112,7 +112,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         embed.AddField("Server ID", serverStats.ServerInfo.Id);
         embed.AddField("Port", serverStats.ServerInfo.Port);
         embed.WithFooter("Server UUID: " + serverStats.ServerInfo.UUID);
-        await ModifyOriginalResponseAsync(original => original.Embed = embed.Build());
+        await FollowupAsync(embed: embed.Build());
 
         // Wait for server to finish starting
         var startResult = await startOp;
@@ -138,7 +138,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     public async Task StopServerAsync([Summary(description: "The server to stop"), Autocomplete(typeof(ServerNameAutocompleter))] int serverId)
     {
         // Check if server is running idle
-        var server = CraftyControlManager.Instance.MinecraftServers.FirstOrDefault(server => server.ServerInfo.Id == serverId);
+        MinecraftServer? server = CraftyControlManager.Instance.MinecraftServers.Find(server => server.ServerInfo.Id == serverId);
         if (server == null)
         {
             await RespondAsync("Couldn't find the server. Please try again later.", ephemeral: true);
@@ -168,7 +168,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var serverStats = await CraftyControlManager.Instance.GetServerStatusAsync(serverId);
         if (serverStats?.ServerInfo == null)
         {
-            await RespondAsync("Couldn't find the server. Please try again later.", ephemeral: true);
+            await FollowupAsync("Couldn't find the server. Please try again later.");
             await DiscordClient.UpdateStatus(false, "Can't fetch server list");
             return;
         }
@@ -180,7 +180,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         embed.AddField("Server ID", serverStats.ServerInfo.Id);
         embed.AddField("Port", serverStats.ServerInfo.Port);
         embed.WithFooter("Server UUID: " + serverStats.ServerInfo.UUID);
-        await ModifyOriginalResponseAsync(original => original.Embed = embed.Build());
+        await FollowupAsync(embed: embed.Build());
 
         // Wait for server to finish stopping
         var stopResult = await stopOp;
@@ -231,16 +231,14 @@ public class ServerNameAutocompleter : AutocompleteHandler
         var words = currentValue.Split(' ');
         foreach (string currentWord in words)
         {
-            foreach (KeyValuePair<string, int> serverScore in scores)
+            foreach (string serverName in scores.Select(serverScore => serverScore.Key))
             {
-                var serverName = serverScore.Key;
-
                 if (serverName.StartsWith(currentWord))
-                    scores[serverScore.Key] += 1;
+                    scores[serverName] += 1;
                 if (serverName.Contains(currentWord))
-                    scores[serverScore.Key] += 1;
+                    scores[serverName] += 1;
                 if (serverName.EndsWith($"({currentWord})"))
-                    scores[serverScore.Key] += 2;
+                    scores[serverName] += 2;
             }
         }
 
